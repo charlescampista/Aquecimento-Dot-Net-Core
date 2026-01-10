@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using projeto1.Data;
+using projeto1.Mappers;
 
 namespace projeto1.Controllers
 {
@@ -23,7 +24,9 @@ namespace projeto1.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var stocks = _context.Stocks.ToList();
+            //Select works the same as map in javascript
+            var stocks = _context.Stocks.ToList()
+            .Select(s => s.ToStockDTO());
             return Ok(stocks);
         }
 
@@ -33,7 +36,7 @@ namespace projeto1.Controllers
             var stock = _context.Stocks.Find(id);
             if (stock == null) return NotFound();
             
-            return Ok(stock);
+            return Ok(stock.ToStockDTO());
         }
     }
 }
