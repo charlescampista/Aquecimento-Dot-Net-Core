@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using projeto1.Data;
+using projeto1.DTOs.Stock;
 using projeto1.Mappers;
+using projeto1.Models;
 
 namespace projeto1.Controllers
 {
@@ -35,8 +39,50 @@ namespace projeto1.Controllers
         {
             var stock = _context.Stocks.Find(id);
             if (stock == null) return NotFound();
-            
+
             return Ok(stock.ToStockDTO());
+        }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] CreateStockRequestDTO stockDTO)
+        {
+            var stockModel = stockDTO.ToStockFromCreatedDTO();
+            _context.Stocks.Add(stockModel);
+            _context.SaveChanges();
+            return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDTO());
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public IActionResult Update([FromRoute] int id, [FromBody] UpdateStockRequestDTO stockDTO)
+        {
+            var stockModel = _context.Stocks.FirstOrDefault(x => x.Id == id);
+
+            if (stockModel == null) return NotFound();
+
+            stockModel.Symbol = stockDTO.Symbol;
+            stockModel.CompanyName = stockDTO.CompanyName;
+            stockModel.Purchase = stockDTO.Purchase;
+            stockModel.LastDiv = stockDTO.LastDiv;
+            stockModel.Industry = stockDTO.Industry;
+            stockModel.MarketCap = stockDTO.MarketCap;
+
+            _context.SaveChanges();
+            return Ok(stockModel.ToStockDTO());
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            var stockModel = _context.Stocks.FirstOrDefault(x => x.Id == id); 
+
+            if (stockModel == null) return NotFound();
+
+            _context.Stocks.Remove(stockModel);
+            _context.SaveChanges();
+            
+            return NoContent();          
         }
     }
 }
