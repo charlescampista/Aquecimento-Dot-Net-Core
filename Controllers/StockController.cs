@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using projeto1.Data;
 using projeto1.DTOs.Stock;
+using projeto1.Interfaces;
 using projeto1.Mappers;
 using projeto1.Models;
+using projeto1.Repositories;
 
 namespace projeto1.Controllers
 {
@@ -19,8 +21,12 @@ namespace projeto1.Controllers
     public class StockController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
-        public StockController(ApplicationDBContext context)
+
+        private readonly IStockRepository _stockRepository;
+
+        public StockController(ApplicationDBContext context, IStockRepository stockRepository)
         {
+            _stockRepository = stockRepository;
             _context = context;
         }
 
@@ -29,15 +35,15 @@ namespace projeto1.Controllers
         public async Task<IActionResult> GetAll()
         {
             //Select works the same as map in javascript
-            var stocks = await _context.Stocks.ToListAsync();
+            var stocks = await _stockRepository.GetAllAsync();
             var stockDTO = stocks.Select(s => s.ToStockDTO());
-            return Ok(stocks);
+            return Ok(stockDTO);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var stock = await _context.Stocks.FindAsync(id);
+            var stock = await _stockRepository.GetByIdAsync(id);
             if (stock == null) return NotFound();
 
             return Ok(stock.ToStockDTO());
@@ -47,8 +53,7 @@ namespace projeto1.Controllers
         public async Task<IActionResult> Create([FromBody] CreateStockRequestDTO stockDTO)
         {
             var stockModel = stockDTO.ToStockFromCreatedDTO();
-            await _context.Stocks.AddAsync(stockModel);
-            await _context.SaveChangesAsync();
+            await _stockRepository.CreateAsync(stockModel);
             return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDTO());
         }
 
@@ -56,18 +61,8 @@ namespace projeto1.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDTO stockDTO)
         {
-            var stockModel = await _context.Stocks.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (stockModel == null) return NotFound();
-
-            stockModel.Symbol = stockDTO.Symbol;
-            stockModel.CompanyName = stockDTO.CompanyName;
-            stockModel.Purchase = stockDTO.Purchase;
-            stockModel.LastDiv = stockDTO.LastDiv;
-            stockModel.Industry = stockDTO.Industry;
-            stockModel.MarketCap = stockDTO.MarketCap;
-
-            await _context.SaveChangesAsync();
+            var stockModel = await _stockRepository.UpdateAsync(id,stockDTO);
+            if(stockModel == null) return NotFound();
             return Ok(stockModel.ToStockDTO());
         }
 
@@ -75,13 +70,8 @@ namespace projeto1.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var stockModel = await _context.Stocks.FirstOrDefaultAsync(x => x.Id == id); 
-
+            var stockModel = await _stockRepository.DeleteAsync(id); 
             if (stockModel == null) return NotFound();
-
-            _context.Stocks.Remove(stockModel);
-            await _context.SaveChangesAsync();
-            
             return NoContent();          
         }
     }
