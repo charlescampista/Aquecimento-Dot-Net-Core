@@ -46,9 +46,21 @@ namespace projeto1.Repositories
             return comment;
         }
 
-        public Task<Comment> UpdateAsync(int id, Comment comment)
+        public async Task<Comment?> UpdateAsync(int id, Comment comment)
         {
-            throw new NotImplementedException();
+            var existingComment = await _context.Comments.FindAsync(id);
+
+            if (existingComment == null) return null;
+
+            //The object comment are being tracked for EF ORM
+            //So it's only need to change the object attributes 
+            //and SaveChanges to commit it on the database.
+            existingComment.Title = comment.Title;
+            existingComment.Content = comment.Content;
+
+            await _context.SaveChangesAsync();
+
+            return existingComment;
         }
     }
 }
