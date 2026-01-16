@@ -25,12 +25,12 @@ namespace projeto1.Repositories
         }
 
 
-        public async Task<Comment> DeleteAsync(int id)
+        public async Task<Comment?> DeleteAsync(int id)
         {
             var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
             if(comment == null) return null;
             _context.Comments.Remove(comment);
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return comment;
         }
 
