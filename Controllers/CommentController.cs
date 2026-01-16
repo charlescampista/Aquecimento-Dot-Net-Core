@@ -15,10 +15,12 @@ namespace projeto1.Controllers
     public class CommentController : ControllerBase
     {
         private readonly ICommentRepository _commentRepository;
+        private readonly IStockRepository _stockRepository;
 
-        public CommentController(ICommentRepository repository)
+        public CommentController(ICommentRepository commentRepository, IStockRepository stockRepository)
         {
-            _commentRepository = repository;
+            _commentRepository = commentRepository;
+            _stockRepository = stockRepository;
         }
 
         [HttpGet]
@@ -34,14 +36,18 @@ namespace projeto1.Controllers
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var comment = await _commentRepository.GetByIdAsync(id);
-            if(comment == null) return NotFound();
+            if (comment == null) return NotFound();
             return Ok(comment.ToCommentDTO());
         }
 
-        // [HttpPost]
-        // public async Task<IActionResult> Create([FromBody] CreateCommentRequestDTO commentDTO)
-        // {
-            
-        // }
+        [HttpPost("{stockId}")]
+        public async Task<IActionResult> Create([FromRoute] int stockId, CreateCommentDTO commentDTO)
+        {
+            if (!await _stockRepository.StockExistsAsync(stockId)) return BadRequest("Stock does not exist");
+
+            var commentModel = commentDTO.ToCommentFromCreate(stockId);
+            await _commentRepository.CreateAsync(commentModel);
+            return CreatedAtAction(nameof(GetById), new { id = commentModel.Id }, commentModel.ToCommentDTO());
+        }
     }
 }

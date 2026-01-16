@@ -14,7 +14,8 @@ namespace projeto1.Mappers
         //In C# this is called extension method. (It make the code less verbose)
         public static CommentDTO ToCommentDTO(this Comment comment)
         {
-            return new CommentDTO {
+            return new CommentDTO
+            {
                 Id = comment.Id,
                 Title = comment.Title,
                 Content = comment.Content,
@@ -22,5 +23,17 @@ namespace projeto1.Mappers
                 StockId = comment.StockId
             };
         }
+
+        public static Comment ToCommentFromCreate(this CreateCommentDTO commentDTO, int stockId)
+        {
+            return new Comment
+            {
+                Title = commentDTO.Title,
+                Content = commentDTO.Content,
+                StockId = stockId
+            };
+        }
+
+
     }
 }

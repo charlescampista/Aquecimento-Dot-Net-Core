@@ -48,6 +48,11 @@ namespace projeto1.Repositories
             return await _context.Stocks.Include(c => c.Comments).FirstOrDefaultAsync(i => i.Id ==id);
         }
 
+        public Task<bool> StockExistsAsync(int id)
+        {
+            return _context.Stocks.AnyAsync(s => s.Id == id);
+        }
+
         public async Task<Stock?> UpdateAsync(int id, UpdateStockRequestDTO stockDTO)
         {
             var existingStock = await _context.Stocks.FirstOrDefaultAsync(s => s.Id == id);

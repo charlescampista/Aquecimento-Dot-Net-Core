@@ -15,5 +15,7 @@ namespace projeto1.Interfaces
         Task<Stock?> UpdateAsync(int id, UpdateStockRequestDTO stockDTO);
         Task<Stock?> DeleteAsync(int id);
 
+        Task<bool> StockExistsAsync(int id);
+
     }
 }

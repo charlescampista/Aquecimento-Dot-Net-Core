@@ -24,6 +24,7 @@ namespace projeto1.Repositories
             return comment;
         }
 
+
         public async Task<Comment> DeleteAsync(int id)
         {
             var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
