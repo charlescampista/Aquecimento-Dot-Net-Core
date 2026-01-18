@@ -34,15 +34,19 @@ namespace projeto1.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             //Select works the same as map in javascript
             var stocks = await _stockRepository.GetAllAsync();
             var stockDTO = stocks.Select(s => s.ToStockDTO());
             return Ok(stockDTO);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var stock = await _stockRepository.GetByIdAsync(id);
             if (stock == null) return NotFound();
 
@@ -52,27 +56,33 @@ namespace projeto1.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateStockRequestDTO stockDTO)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var stockModel = stockDTO.ToStockFromCreatedDTO();
             await _stockRepository.CreateAsync(stockModel);
             return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDTO());
         }
 
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDTO stockDTO)
         {
-            var stockModel = await _stockRepository.UpdateAsync(id,stockDTO);
-            if(stockModel == null) return NotFound();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var stockModel = await _stockRepository.UpdateAsync(id, stockDTO);
+            if (stockModel == null) return NotFound();
             return Ok(stockModel.ToStockDTO());
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var stockModel = await _stockRepository.DeleteAsync(id); 
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var stockModel = await _stockRepository.DeleteAsync(id);
             if (stockModel == null) return NotFound();
-            return NoContent();          
+            return NoContent();
         }
     }
 }
