@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using projeto1.Data;
 using projeto1.DTOs.Stock;
+using projeto1.Helpers;
 using projeto1.Interfaces;
 using projeto1.Mappers;
 using projeto1.Models;
@@ -32,12 +33,12 @@ namespace projeto1.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             //Select works the same as map in javascript
-            var stocks = await _stockRepository.GetAllAsync();
+            var stocks = await _stockRepository.GetAllAsync(query);
             var stockDTO = stocks.Select(s => s.ToStockDTO());
             return Ok(stockDTO);
         }
